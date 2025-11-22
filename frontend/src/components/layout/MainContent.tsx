@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Timer } from "../timer/Timer";
 import { TaskSelector } from "../tasks/TaskSelector";
 import { useTimer } from "@/contexts/TimerContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "../auth/AuthModal";
 import { Button } from "../ui/button";
 import { Plus, RotateCcw } from "lucide-react";
 import { AddTaskDialog } from "../tasks/AddTaskDialog";
@@ -9,17 +11,29 @@ import { cn } from "@/lib/utils";
 
 export const MainContent: React.FC = () => {
   const { isActive, resetDailyRecords } = useTimer();
-  const isAuthenticated = true;
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
+  const [authModalProps, setAuthModalProps] = useState({
+    title: "로그인",
+    description: "계속하려면 로그인해주세요",
+  });
 
   const handleRequireAuth = (action: string) => {
-    console.log(`Action requiring auth (local): ${action} - allowing.`);
+    if (!isAuthenticated) {
+      setAuthModalProps({
+        title: "로그인 필요",
+        description: `${action}을(를) 사용하려면 로그인이 필요합니다.`,
+      });
+      setShowAuthModal(true);
+      return false;
+    }
     return true;
   };
 
   const handleAddTask = () => {
-    if (handleRequireAuth('새 작업 추가')) {
+    if (handleRequireAuth("새 작업 추가")) {
       setShowAddTask(true);
     }
   };
@@ -30,23 +44,47 @@ export const MainContent: React.FC = () => {
   };
 
   return (
-    <main className={cn(
-      "flex w-full flex-col text-white mx-auto relative transition-all duration-500",
-      isCameraMode 
-        ? "max-w-4xl ring-2 ring-orange-500/50 ring-offset-zinc-900 rounded-3xl" 
-        : "max-w-sm"
-    )}>
-      <div className={cn(
-        "px-10 pb-6 pt-3 rounded-lg transition-all duration-500",
-        isCameraMode && "bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/10"
-      )}>
+    <main
+      className={cn(
+        "flex w-full flex-col text-white mx-auto relative transition-all duration-500",
+        isCameraMode
+          ? "max-w-4xl ring-2 ring-orange-500/50 ring-offset-zinc-900 rounded-3xl"
+          : "max-w-sm",
+      )}
+    >
+      <div
+        className={cn(
+          "px-10 pb-6 pt-3 rounded-lg transition-all duration-500",
+          isCameraMode &&
+            "bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/10",
+        )}
+      >
         <Timer onCameraModeChange={handleCameraModeChange} />
-        <TaskSelector 
-          onRequireAuth={handleRequireAuth} 
-          disabled={isActive}
-        />
+        <TaskSelector onRequireAuth={handleRequireAuth} disabled={isActive} />
       </div>
-      
+
+      {!isAuthenticated && (
+        <div className="mt-8 flex flex-col items-center">
+          <p className="text-zinc-400 mb-4">
+            더 많은 기능을 사용하려면 로그인하세요
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => setShowAuthModal(true)}
+            className="bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600"
+          >
+            로그인 / 회원가입
+          </Button>
+        </div>
+      )}
+
+      <AuthModal
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        title={authModalProps.title}
+        description={authModalProps.description}
+      />
+
       {isAuthenticated && (
         <>
           <Button
@@ -54,7 +92,7 @@ export const MainContent: React.FC = () => {
             onClick={() => {
               if (
                 window.confirm(
-                  "정말로 오늘의 모든 기록을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+                  "정말로 오늘의 모든 기록을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
                 )
               ) {
                 resetDailyRecords();
@@ -78,7 +116,9 @@ export const MainContent: React.FC = () => {
             open={showAddTask}
             onOpenChange={setShowAddTask}
             onAddTask={(newTask) => {
-              window.dispatchEvent(new CustomEvent('taskAdded', { detail: newTask }));
+              window.dispatchEvent(
+                new CustomEvent("taskAdded", { detail: newTask }),
+              );
             }}
           />
         </>

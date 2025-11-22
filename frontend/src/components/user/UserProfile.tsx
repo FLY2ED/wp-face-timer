@@ -1,10 +1,10 @@
-
 import React, { useState } from "react";
 import { useUserStatus } from "@/contexts/UserStatusContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Crown, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { SettingsModal } from "../settings/SettingsModal";
+import { AuthModal } from "../auth/AuthModal";
 import { useSidebar } from "@/components/ui/sidebar";
 
 // Define avatar sizes first
@@ -20,23 +20,38 @@ export const UserProfile: React.FC<{
   size?: "sm" | "md" | "lg";
 }> = ({ userId, showSettings = true, size = "md" }) => {
   const { status } = useUserStatus();
+  const { user, isAuthenticated } = useAuth();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const { state } = useSidebar();
-  
-  const email = "";
 
-  if (true) {
+  const email = user?.email || "";
+
+  if (!isAuthenticated || !user) {
     return (
-      <div className="border-t border-zinc-700 flex w-full items-center gap-2 font-normal whitespace-nowrap justify-between mt-auto px-3 py-4">
-        <div className="flex items-center gap-2 text-white">
-          <Avatar className={avatarSizes[size]}>
-            <AvatarFallback className="bg-zinc-700 text-white">
-              <User size={18} />
-            </AvatarFallback>
-          </Avatar>
-          {state === "expanded" && <span className="text-sm">로그인 해주세요</span>}
+      <>
+        <div className="border-t border-zinc-700 flex w-full items-center gap-2 font-normal whitespace-nowrap justify-between mt-auto px-3 py-4">
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="flex items-center gap-2 text-white hover:bg-zinc-800 rounded-md px-2 py-1 transition-colors w-full"
+          >
+            <Avatar className={avatarSizes[size]}>
+              <AvatarFallback className="bg-zinc-700 text-white">
+                <User size={18} />
+              </AvatarFallback>
+            </Avatar>
+            {state === "expanded" && (
+              <span className="text-sm">로그인 해주세요</span>
+            )}
+          </button>
         </div>
-      </div>
+        <AuthModal
+          open={showAuthModal}
+          onOpenChange={setShowAuthModal}
+          title="로그인"
+          description="계속하려면 로그인해주세요"
+        />
+      </>
     );
   }
 
@@ -81,8 +96,8 @@ export const UserProfile: React.FC<{
                 {email?.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div 
-              className={`absolute bottom-0 right-0 ${getStatusColor(status)} h-2.5 w-2.5 rounded-full border border-zinc-800`} 
+            <div
+              className={`absolute bottom-0 right-0 ${getStatusColor(status)} h-2.5 w-2.5 rounded-full border border-zinc-800`}
               aria-label={getStatusText(status)}
             />
           </div>
@@ -90,14 +105,19 @@ export const UserProfile: React.FC<{
             <div className="flex flex-col">
               <span className="text-sm flex items-center gap-1 truncate max-w-[130px]">
                 {email}
-                <Crown className="h-4 w-4 text-yellow-500" aria-label="Free Plan" />
+                <Crown
+                  className="h-4 w-4 text-yellow-500"
+                  aria-label="Free Plan"
+                />
               </span>
-              <span className="text-xs text-zinc-400">{getStatusText(status)}</span>
+              <span className="text-xs text-zinc-400">
+                {getStatusText(status)}
+              </span>
             </div>
           )}
         </div>
         {showSettings && state === "expanded" && (
-          <button 
+          <button
             className="text-zinc-400 hover:text-white p-1"
             onClick={() => setShowSettingsModal(true)}
           >
@@ -105,9 +125,9 @@ export const UserProfile: React.FC<{
           </button>
         )}
       </div>
-      <SettingsModal 
-        open={showSettingsModal} 
-        onOpenChange={setShowSettingsModal} 
+      <SettingsModal
+        open={showSettingsModal}
+        onOpenChange={setShowSettingsModal}
       />
     </>
   );
