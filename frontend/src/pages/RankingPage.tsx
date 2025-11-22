@@ -15,8 +15,6 @@ import { formatDuration } from "@/utils/timeUtils";
 import { users } from "@/data/mockData";
 import { RankingUser } from "@/types";
 
-// Ranking categories
-// const categories = ["전체", "대학생", "취업", "기타", "성인"];
 
 const RankingPage: React.FC = () => {
   // const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -61,23 +59,6 @@ const RankingPage: React.FC = () => {
               ))}
             </div>
             
-            {/* Category selection */}
-            <div className="bg-zinc-800 p-4 rounded-lg overflow-x-auto">
-              <div className="flex space-x-2 min-w-max">
-                {["전체", "대학생", "취업", "기타", "성인"].map((category) => (
-                  <Button
-                    key={category}
-                    variant={"outline"}
-                    className={
-                       "bg-zinc-900 text-zinc-400 border-zinc-700"
-                    }
-                    disabled
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Ranking table (내용은 비우거나 목업으로 대체) */}

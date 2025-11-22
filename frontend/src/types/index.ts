@@ -88,5 +88,4 @@ export interface RankingUser {
   avatar?: string;
   totalTime: number;
   rank: number;
-  category?: string;
 }
