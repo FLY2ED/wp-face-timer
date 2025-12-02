@@ -7,6 +7,7 @@ import { UserStatusProvider } from "@/contexts/UserStatusContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CameraPermissionProvider } from "@/contexts/CameraPermissionContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { TaskProvider } from "@/contexts/TaskContext";
 import Index from "./pages/Index";
 import TodoPage from "./pages/TodoPage";
 import GroupPage from "./pages/GroupPage";
@@ -41,71 +42,73 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <AuthProvider>
-          <UserStatusProvider>
-            <CameraPermissionProvider>
-              <SidebarProvider>
-                <Toaster />
-                <Sonner
-                  position="top-right"
-                  toastOptions={{
-                    style: {
-                      background: "rgba(39, 39, 42, 0.9)",
-                      color: "#fff",
-                      border: "1px solid rgba(63, 63, 70, 0.3)",
-                      backdropFilter: "blur(8px)",
-                    },
-                    className: "backdrop-blur-sm",
-                  }}
-                />
-                <Routes>
-                  <Route path="/auth" element={<Navigate to="/" replace />} />
-                  <Route path="/" element={<Index />} />
-                  <Route
-                    path="/todo"
-                    element={
-                      <RequireAuth>
-                        <TodoPage />
-                      </RequireAuth>
-                    }
+          <TaskProvider>
+            <UserStatusProvider>
+              <CameraPermissionProvider>
+                <SidebarProvider>
+                  <Toaster />
+                  <Sonner
+                    position="top-right"
+                    toastOptions={{
+                      style: {
+                        background: "rgba(39, 39, 42, 0.9)",
+                        color: "#fff",
+                        border: "1px solid rgba(63, 63, 70, 0.3)",
+                        backdropFilter: "blur(8px)",
+                      },
+                      className: "backdrop-blur-sm",
+                    }}
                   />
-                  <Route
-                    path="/group/:groupId"
-                    element={
-                      <RequireAuth>
-                        <GroupPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route path="/pricing" element={<PricingPage />} />
-                  <Route
-                    path="/ranking"
-                    element={
-                      <RequireAuth>
-                        <RankingPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/statistics"
-                    element={
-                      <RequireAuth>
-                        <StatisticsPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <RequireAuth>
-                        <SettingsPage />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </SidebarProvider>
-            </CameraPermissionProvider>
-          </UserStatusProvider>
+                  <Routes>
+                    <Route path="/auth" element={<Navigate to="/" replace />} />
+                    <Route path="/" element={<Index />} />
+                    <Route
+                      path="/todo"
+                      element={
+                        <RequireAuth>
+                          <TodoPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/group/:groupId"
+                      element={
+                        <RequireAuth>
+                          <GroupPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route
+                      path="/ranking"
+                      element={
+                        <RequireAuth>
+                          <RankingPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/statistics"
+                      element={
+                        <RequireAuth>
+                          <StatisticsPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <RequireAuth>
+                          <SettingsPage />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </SidebarProvider>
+              </CameraPermissionProvider>
+            </UserStatusProvider>
+          </TaskProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

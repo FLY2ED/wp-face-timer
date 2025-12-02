@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useTimer } from "@/contexts/TimerContext";
+import { useTask } from "@/contexts/TaskContext";
 import { formatDuration } from "@/utils/timeUtils";
-import { Button } from "@/components/ui/button";
 import {
-  Plus,
   Clock,
   BookOpen,
   Briefcase,
@@ -14,19 +13,19 @@ import {
   Dumbbell,
   Coffee,
   Heart,
+  Plus,
+  Zap,
+  Film,
+  Paintbrush,
+  Book,
+  Monitor,
+  Users,
+  Star,
+  Home,
+  MapPin,
 } from "lucide-react";
 import { AddTaskDialog } from "./AddTaskDialog";
 import { cn } from "@/lib/utils";
-import { defaultTasks as mockTasks, users as mockUsers } from "@/data/mockData";
-import { Task as AppTask } from "@/types";
-
-interface Task {
-  id: string;
-  title: string;
-  icon?: string;
-  group_id: string;
-  color?: string;
-}
 
 // 아이콘 매핑 객체 (아이콘 이름과 컴포넌트 매핑)
 const iconMapping: Record<string, React.ElementType> = {
@@ -39,9 +38,17 @@ const iconMapping: Record<string, React.ElementType> = {
   Coffee,
   Heart,
   MoreHorizontal,
-  // 이름으로 Lucide 아이콘 매핑
   Clock,
   Plus,
+  Zap,
+  Film,
+  Paintbrush,
+  Book,
+  Monitor,
+  Users,
+  Star,
+  Home,
+  MapPin,
 };
 
 interface TaskSelectorProps {
@@ -49,23 +56,20 @@ interface TaskSelectorProps {
   disabled?: boolean;
 }
 
-const MOCK_CURRENT_USER_ID = mockUsers[0]?.id || "user1";
-
 export const TaskSelector: React.FC<TaskSelectorProps> = ({
   onRequireAuth,
   disabled = false,
 }) => {
   const { startTimer, activeTask, elapsedTime, isActive } = useTimer();
-  const [tasks, setTasks] = useState<AppTask[]>([]);
+  const { tasks, isLoading: loading } = useTask();
   const [showAddTask, setShowAddTask] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [taskTimes, setTaskTimes] = useState<Record<string, number>>({});
 
   // 작업 시간 로드 및 실시간 업데이트
   const loadTaskTimes = () => {
     try {
       const savedTaskTimes = JSON.parse(
-        localStorage.getItem("task_times") || "{}"
+        localStorage.getItem("task_times") || "{}",
       );
       setTaskTimes(savedTaskTimes);
     } catch {
@@ -93,39 +97,6 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
     };
-  }, []);
-
-  // 활성 작업의 현재 시간 계산
-  const getCurrentTaskTime = (taskId: string) => {
-    const savedTime = taskTimes[taskId] || 0;
-    if (activeTask?.id === taskId && isActive) {
-      return savedTime + elapsedTime;
-    }
-    return savedTime;
-  };
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      console.log("Fetching tasks (local) using mockData.defaultTasks");
-      setTasks(mockTasks);
-    } catch (error) {
-      console.error("Error fetching tasks (local):", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks();
-
-    const handleTaskAdded = (event: Event) => {
-      const customEvent = event as CustomEvent<AppTask>;
-      setTasks((prevTasks) => [...prevTasks, customEvent.detail]);
-    };
-
-    window.addEventListener("taskAdded", handleTaskAdded);
-    return () => window.removeEventListener("taskAdded", handleTaskAdded);
   }, []);
 
   const handleAddTask = () => {
@@ -161,15 +132,7 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
             </p>
           </div>
         </div>
-        <AddTaskDialog
-          open={showAddTask}
-          onOpenChange={setShowAddTask}
-          onAddTask={(newTask) => {
-            window.dispatchEvent(
-              new CustomEvent("taskAdded", { detail: newTask })
-            );
-          }}
-        />
+        <AddTaskDialog open={showAddTask} onOpenChange={setShowAddTask} />
       </div>
     );
   }
@@ -177,10 +140,12 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
   return (
     <div className="mt-20 flex flex-col items-center">
       <div className="w-full max-w-sm space-y-3">
-        <div className={cn(
-          "text-sm font-medium flex items-center gap-2",
-          disabled ? "text-zinc-500" : "text-white"
-        )}>
+        <div
+          className={cn(
+            "text-sm font-medium flex items-center gap-2",
+            disabled ? "text-zinc-500" : "text-white",
+          )}
+        >
           작업
           {disabled && (
             <span className="text-xs text-orange-500 bg-orange-500/10 px-2 py-1 rounded-full">
@@ -196,10 +161,10 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
             className={cn(
               "w-full p-3 flex items-center gap-3 rounded-xl text-white",
               "transition-all duration-300 ease-in-out",
-              disabled 
-                ? "bg-zinc-800/20 cursor-not-allowed opacity-50" 
+              disabled
+                ? "bg-zinc-800/20 cursor-not-allowed opacity-50"
                 : "hover:bg-white/10 bg-zinc-800/50",
-              activeTask?.id === task.id && !disabled && "bg-orange-500/20"
+              activeTask?.id === task.id && !disabled && "bg-orange-500/20",
             )}
           >
             <div className="flex-shrink-0">
@@ -207,7 +172,7 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
                 <div
                   className={cn(
                     "h-6 w-6 rounded-md flex items-center justify-center",
-                    activeTask?.id === task.id && "!bg-orange-500/20"
+                    activeTask?.id === task.id && "!bg-orange-500/20",
                   )}
                   style={{ backgroundColor: task.color || "#3F3F46" }}
                 >
@@ -230,9 +195,11 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
             <div
               className={cn(
                 "text-xs ml-auto transition-all duration-500 ease-in-out",
-                activeTask?.id === task.id 
-                  ? (isActive ? "text-orange-500" : "text-white")
-                  : "text-zinc-400"
+                activeTask?.id === task.id
+                  ? isActive
+                    ? "text-orange-500"
+                    : "text-white"
+                  : "text-zinc-400",
               )}
             >
               <span className="inline-block transition-all duration-500 ease-in-out transform opacity-100">
@@ -241,14 +208,14 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
                   if (activeTask?.id === task.id && isActive) {
                     return "진행중";
                   }
-                  
+
                   // 진행 중이 아닐 때는 저장된 시간만 표시
                   if (activeTask?.id === task.id && !isActive) {
                     // 현재 선택된 작업이지만 중지된 상태: elapsedTime 사용 (이미 누적시간 포함)
                     return elapsedTime > 0 ? formatDuration(elapsedTime) : "";
                   } else {
-                    // 다른 작업: 저장된 시간만 사용
-                    const savedTime = taskTimes[task.id] || 0;
+                    // 다른 작업: 저장된 시간 또는 백엔드 totalTime 사용
+                    const savedTime = taskTimes[task.id] || task.totalTime || 0;
                     return savedTime > 0 ? formatDuration(savedTime) : "";
                   }
                 })()}
@@ -258,13 +225,7 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
         ))}
       </div>
 
-      <AddTaskDialog
-        open={showAddTask}
-        onOpenChange={setShowAddTask}
-        onAddTask={(newTask) => {
-          setTasks((prev) => [...prev, newTask]);
-        }}
-      />
+      <AddTaskDialog open={showAddTask} onOpenChange={setShowAddTask} />
     </div>
   );
 };

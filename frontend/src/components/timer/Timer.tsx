@@ -104,7 +104,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
     startFaceDetectionTimer,
     resetDailyRecords,
   } = useTimerState();
-  
+
   // 카메라 권한 컨텍스트 추가
   const {
     permission: cameraPermission,
@@ -113,11 +113,13 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
     selectedCameraId,
     openSelectionDialog,
   } = useCameraPermissionContext();
-  
+
   const [restTime, setRestTime] = useState(0);
   const [restTimerActive, setRestTimerActive] = useState(false);
   const [hasTodaySession, setHasTodaySession] = useState(false);
-  const [isCameraAvailable, setIsCameraAvailable] = useState<boolean | null>(null);
+  const [isCameraAvailable, setIsCameraAvailable] = useState<boolean | null>(
+    null,
+  );
   const [isManualPause, setIsManualPause] = useState(false); // 수동 일시정지 여부
   const [pauseReason, setPauseReason] = useState<string | null>(null); // 일시정지 이유
   const [lastAutoResumeTime, setLastAutoResumeTime] = useState<number>(0); // 마지막 자동 재개 시간
@@ -132,22 +134,38 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
   const isManualPauseRef = useRef(isManualPause);
   const isActiveRef = useRef(isActive);
 
-  useEffect(() => { isCameraModeRef.current = isCameraMode; }, [isCameraMode]);
-  useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
-  useEffect(() => { isWaitingForFaceRef.current = isWaitingForFace; }, [isWaitingForFace]);
-  useEffect(() => { canStartTimerRef.current = canStartTimer; }, [canStartTimer]);
-  useEffect(() => { isManualPauseRef.current = isManualPause; }, [isManualPause]);
-  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
+  useEffect(() => {
+    isCameraModeRef.current = isCameraMode;
+  }, [isCameraMode]);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+  useEffect(() => {
+    isWaitingForFaceRef.current = isWaitingForFace;
+  }, [isWaitingForFace]);
+  useEffect(() => {
+    canStartTimerRef.current = canStartTimer;
+  }, [canStartTimer]);
+  useEffect(() => {
+    isManualPauseRef.current = isManualPause;
+  }, [isManualPause]);
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   // resume/pause 함수도 ref에 저장하여 항상 최신 함수를 호출하도록 함
   const resumeTimerRef = useRef(resumeTimer);
   const pauseTimerRef = useRef(pauseTimer);
-  useEffect(() => { resumeTimerRef.current = resumeTimer; }, [resumeTimer]);
-  useEffect(() => { pauseTimerRef.current = pauseTimer; }, [pauseTimer]);
-  
+  useEffect(() => {
+    resumeTimerRef.current = resumeTimer;
+  }, [resumeTimer]);
+  useEffect(() => {
+    pauseTimerRef.current = pauseTimer;
+  }, [pauseTimer]);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { isCameraEnabled, videoRef, toggleCamera } = useCamera();
-  
+
   // TimerContext 직접 접근 (상태 동기화 확인용)
   const timerContext = useTimer();
 
@@ -195,7 +213,8 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
       isCameraMode: isCameraModeRef.current,
       isActive: isActiveRef.current,
       isPaused: isPausedRef.current,
-      조건충족: isCameraModeRef.current && isActiveRef.current && !isPausedRef.current
+      조건충족:
+        isCameraModeRef.current && isActiveRef.current && !isPausedRef.current,
     });
 
     // 자동 일시정지: 타이머가 활성 상태이고 일시정지되지 않았으면 일시정지
@@ -269,7 +288,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
       isCameraMode,
       isDetecting,
       isStable,
-      shouldShowStabilizing: isCameraMode && isDetecting && !isStable
+      shouldShowStabilizing: isCameraMode && isDetecting && !isStable,
     });
   }, [isCameraMode, isDetecting, isStable]);
 
@@ -298,30 +317,40 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
       setPauseReason(null); // 타이머 시작시 일시정지 이유 초기화
       startTimer(activeTask);
     }
-  }, [activeTask, canStartTimer, isActiveRef.current, isCameraMode, startTimer]);
+  }, [
+    activeTask,
+    canStartTimer,
+    isActiveRef.current,
+    isCameraMode,
+    startTimer,
+  ]);
 
   // canStartTimer 상태 변화 추적
   useEffect(() => {
-    console.log("🎛️ canStartTimer 상태 변화:", { 
+    console.log("🎛️ canStartTimer 상태 변화:", {
       canStartTimer,
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: new Date().toLocaleTimeString(),
     });
   }, [canStartTimer]);
 
   // 간단한 상태 디버깅
   useEffect(() => {
-    console.log("🔍 주요 상태:", { isCameraMode, isActive: isActiveRef.current, canStartTimer });
+    console.log("🔍 주요 상태:", {
+      isCameraMode,
+      isActive: isActiveRef.current,
+      canStartTimer,
+    });
   }, [isCameraMode, isActiveRef.current, canStartTimer]);
 
   // isPaused 상태 변화 추적
   useEffect(() => {
-    console.log("⏸️ isPaused 상태 변화:", { 
-      isPaused, 
-      isActive: isActiveRef.current, 
+    console.log("⏸️ isPaused 상태 변화:", {
+      isPaused,
+      isActive: isActiveRef.current,
       isCameraMode,
       isManualPause,
       pauseReason,
-      timestamp: new Date().toLocaleTimeString()
+      timestamp: new Date().toLocaleTimeString(),
     });
   }, [isPaused, isActiveRef.current, isCameraMode, isManualPause, pauseReason]);
 
@@ -346,7 +375,19 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
     //   canStartTimer: canStartTimer,
     //   timestamp: new Date().toLocaleTimeString()
     // });
-  }, [isCameraMode, isActiveRef.current, isPaused, activeTask, isWaitingForFace, canStartTimer, timerContext.isActive, timerContext.isPaused, timerContext.elapsedTime, formattedTime, elapsedTime]);
+  }, [
+    isCameraMode,
+    isActiveRef.current,
+    isPaused,
+    activeTask,
+    isWaitingForFace,
+    canStartTimer,
+    timerContext.isActive,
+    timerContext.isPaused,
+    timerContext.elapsedTime,
+    formattedTime,
+    elapsedTime,
+  ]);
 
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
@@ -381,7 +422,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
         }
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(
-          (device) => device.kind === "videoinput"
+          (device) => device.kind === "videoinput",
         );
         if (videoDevices.length === 0) {
           setIsCameraAvailable(null);
@@ -437,7 +478,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
             try {
               const devices = await navigator.mediaDevices.enumerateDevices();
               const videoDevices = devices.filter(
-                (device) => device.kind === "videoinput"
+                (device) => device.kind === "videoinput",
               );
               setIsCameraAvailable(videoDevices.length > 0);
             } catch (error) {
@@ -547,8 +588,6 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
     }
   };
 
-
-
   // 오늘의 타이머 세션 확인 로직 (Supabase 의존성 제거)
   useEffect(() => {
     // if (!user) return; // user 확인 삭제
@@ -598,20 +637,26 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
             <div
               className={cn("px-5 py-2 rounded-full text-sm font-medium", {
                 "bg-zinc-500/20 text-zinc-300": !isActiveRef.current, // 대기중
-                "bg-orange-300/20 text-orange-100": isActiveRef.current && isPaused, // 일시정지
-                "bg-orange-500/20 text-orange-200": isActiveRef.current && !isPaused, // 진행중
+                "bg-orange-300/20 text-orange-100":
+                  isActiveRef.current && isPaused, // 일시정지
+                "bg-orange-500/20 text-orange-200":
+                  isActiveRef.current && !isPaused, // 진행중
               })}
             >
-              {isActiveRef.current ? (isPaused ? "일시정지" : "진행중") : "대기중"}
+              {isActiveRef.current
+                ? isPaused
+                  ? "일시정지"
+                  : "진행중"
+                : "대기중"}
             </div>
-            
+
             {/* 일시정지 이유 표시 */}
             {isPaused && pauseReason && (
               <div className="px-5 py-2 rounded-full text-sm bg-yellow-500/20 text-yellow-200 text-center max-w-xs">
                 {pauseReason}
               </div>
             )}
-            
+
             {/* 카메라 모드 상태 표시 */}
             <div className="flex items-center gap-2">
               {isCameraMode && (
@@ -626,7 +671,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
       <div
         className={cn(
           "relative overflow-hidden rounded-[32px] bg-zinc-950 backdrop-blur-sm transition-all duration-500",
-          isCameraMode ? "aspect-video" : ""
+          isCameraMode ? "aspect-video" : "",
         )}
       >
         {isCameraMode && isCameraEnabled && (
@@ -644,7 +689,7 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
         <div
           className={cn(
             "relative z-10 text-center transition-all duration-500",
-            isCameraMode ? "py-12 px-8" : "py-12 px-8"
+            isCameraMode ? "py-12 px-8" : "py-12 px-8",
           )}
         >
           {isCameraMode &&
@@ -733,7 +778,6 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
               <div className="text-5xl font-extrabold text-white">
                 {formattedTime}
               </div>
-
             </div>
           )}
         </div>
@@ -741,140 +785,150 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
         <AnimatePresence>
           {(() => {
             const shouldShow = isCameraMode && lastAnalysisResult && isStable;
-              //             console.log("🎨 UI 표시 조건 확인:", {
-              //   isCameraMode,
-              //   hasLastAnalysisResult: !!lastAnalysisResult,
-              //   isStable,
-              //   shouldShow,
-              //   note: "타이머 상태와 관계없이 카메라 모드에서 안정화 완료시 표시"
-              // });
+            //             console.log("🎨 UI 표시 조건 확인:", {
+            //   isCameraMode,
+            //   hasLastAnalysisResult: !!lastAnalysisResult,
+            //   isStable,
+            //   shouldShow,
+            //   note: "타이머 상태와 관계없이 카메라 모드에서 안정화 완료시 표시"
+            // });
             return shouldShow;
           })() && (
-              <motion.div
-                className="absolute bottom-0 left-0 right-0 w-full z-20"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-              >
-                {/* Single Row: All Analysis Results */}
-                <div className="flex justify-between gap-1 text-xs bg-white/10 backdrop-blur-sm p-4">
-                  {/* 졸음 감지 상태 */}
-                  <div
-                    className={cn(
-                      "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 font-semibold shadow-lg",
-                      lastAnalysisResult.isDrowsy
-                        ? "bg-red-600/30 text-red-100"
-                        : lastAnalysisResult.fatigueLevel === "high"
-                        ? "bg-red-600/30 text-red-100"
-                        : lastAnalysisResult.fatigueLevel === "medium"
-                        ? "bg-orange-500/30 text-orange-100"
-                        : "bg-green-600/30 text-green-100"
-                    )}
-                  >
-                    {lastAnalysisResult.isDrowsy ? "😴" : lastAnalysisResult.fatigueLevel === "high" ? "😵" : lastAnalysisResult.fatigueLevel === "medium" ? "😐" : "😊"}
-                    <span className="text-[10px]">
-                      {lastAnalysisResult.isDrowsy
-                        ? "졸음"
-                        : lastAnalysisResult.fatigueLevel === "high"
-                        ? "피로"
-                        : lastAnalysisResult.fatigueLevel === "medium"
-                        ? "보통"
-                        : "좋음"}
-                    </span>
-                  </div>
-
-                  {/* 집중도 점수 */}
-                  <div
-                    className={cn(
-                      "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
-                      lastAnalysisResult.attentionScore >= 80
-                        ? "bg-green-500/20 text-green-200"
-                        : lastAnalysisResult.attentionScore >= 60
-                        ? "bg-yellow-500/20 text-yellow-200"
-                        : lastAnalysisResult.attentionScore >= 40
-                        ? "bg-orange-500/20 text-orange-200"
-                        : "bg-red-500/20 text-red-200"
-                    )}
-                  >
-                    집중도
-                    <span className="text-[10px]">{lastAnalysisResult.attentionScore}점</span>
-                  </div>
-
-                  {/* 눈 */}
-                  <div
-                    className={cn(
-                      "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
-                      lastAnalysisResult.ear < 0.15
-                        ? "bg-red-500/20 text-red-200"
-                        : lastAnalysisResult.ear < 0.22
-                        ? "bg-yellow-500/20 text-yellow-200"
-                        : "bg-green-500/20 text-green-200"
-                    )}
-                  >
-                    👁️
-                    <span className="text-[10px]">
-                      {lastAnalysisResult.ear < 0.15
-                        ? "감음"
-                        : lastAnalysisResult.ear < 0.22
-                        ? "깜빡임"
-                        : lastAnalysisResult.ear < 0.35
-                        ? "정상"
-                        : "크게뜸"}
-                    </span>
-                  </div>
-
-                  {/* 하품 여부 */}
-                  <div
-                    className={cn(
-                      "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
-                      lastAnalysisResult.isYawning
-                        ? "bg-orange-500/20 text-orange-200"
-                        : "bg-teal-500/20 text-teal-200"
-                    )}
-                  >
-                    🥱
-                    <span className="text-[10px]">
-                      {lastAnalysisResult.isYawning ? "하품중" : "정상"}
-                    </span>
-                  </div>
-
-                  {/* 깜빡임 */}
-                  <div
-                    className={cn(
-                      "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
-                      lastAnalysisResult.blinkRate < 6
-                        ? "bg-red-500/20 text-red-200"
-                        : lastAnalysisResult.blinkRate < 12
-                        ? "bg-yellow-500/20 text-yellow-200"
-                        : lastAnalysisResult.blinkRate <= 30
-                        ? "bg-green-500/20 text-green-200"
-                        : "bg-orange-500/20 text-orange-200"
-                    )}
-                  >
-                    분당 깜빡임 횟수
-                    <span className="text-[10px]">{lastAnalysisResult.blinkRate}</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-        </AnimatePresence>
-      </div>
-
-              <AnimatePresence mode="wait">
-          {activeTask && (isActiveRef.current || isWaitingForFace) && (
             <motion.div
-              layout
+              className="absolute bottom-0 left-0 right-0 w-full z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{
-                duration: 0.2,
-                ease: "easeInOut",
-                layout: { duration: 0.3, ease: "easeInOut" }
-              }}
-              className="flex gap-3 justify-center bg-zinc-950 rounded-3xl p-3 mt-2"
+              transition={{ duration: 0.25, ease: "easeInOut" }}
             >
+              {/* Single Row: All Analysis Results */}
+              <div className="flex justify-between gap-1 text-xs bg-white/10 backdrop-blur-sm p-4">
+                {/* 졸음 감지 상태 */}
+                <div
+                  className={cn(
+                    "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 font-semibold shadow-lg",
+                    lastAnalysisResult.isDrowsy
+                      ? "bg-red-600/30 text-red-100"
+                      : lastAnalysisResult.fatigueLevel === "high"
+                        ? "bg-red-600/30 text-red-100"
+                        : lastAnalysisResult.fatigueLevel === "medium"
+                          ? "bg-orange-500/30 text-orange-100"
+                          : "bg-green-600/30 text-green-100",
+                  )}
+                >
+                  {lastAnalysisResult.isDrowsy
+                    ? "😴"
+                    : lastAnalysisResult.fatigueLevel === "high"
+                      ? "😵"
+                      : lastAnalysisResult.fatigueLevel === "medium"
+                        ? "😐"
+                        : "😊"}
+                  <span className="text-[10px]">
+                    {lastAnalysisResult.isDrowsy
+                      ? "졸음"
+                      : lastAnalysisResult.fatigueLevel === "high"
+                        ? "피로"
+                        : lastAnalysisResult.fatigueLevel === "medium"
+                          ? "보통"
+                          : "좋음"}
+                  </span>
+                </div>
+
+                {/* 집중도 점수 */}
+                <div
+                  className={cn(
+                    "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
+                    lastAnalysisResult.attentionScore >= 80
+                      ? "bg-green-500/20 text-green-200"
+                      : lastAnalysisResult.attentionScore >= 60
+                        ? "bg-yellow-500/20 text-yellow-200"
+                        : lastAnalysisResult.attentionScore >= 40
+                          ? "bg-orange-500/20 text-orange-200"
+                          : "bg-red-500/20 text-red-200",
+                  )}
+                >
+                  집중도
+                  <span className="text-[10px]">
+                    {lastAnalysisResult.attentionScore}점
+                  </span>
+                </div>
+
+                {/* 눈 */}
+                <div
+                  className={cn(
+                    "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
+                    lastAnalysisResult.ear < 0.15
+                      ? "bg-red-500/20 text-red-200"
+                      : lastAnalysisResult.ear < 0.22
+                        ? "bg-yellow-500/20 text-yellow-200"
+                        : "bg-green-500/20 text-green-200",
+                  )}
+                >
+                  👁️
+                  <span className="text-[10px]">
+                    {lastAnalysisResult.ear < 0.15
+                      ? "감음"
+                      : lastAnalysisResult.ear < 0.22
+                        ? "깜빡임"
+                        : lastAnalysisResult.ear < 0.35
+                          ? "정상"
+                          : "크게뜸"}
+                  </span>
+                </div>
+
+                {/* 하품 여부 */}
+                <div
+                  className={cn(
+                    "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
+                    lastAnalysisResult.isYawning
+                      ? "bg-orange-500/20 text-orange-200"
+                      : "bg-teal-500/20 text-teal-200",
+                  )}
+                >
+                  🥱
+                  <span className="text-[10px]">
+                    {lastAnalysisResult.isYawning ? "하품중" : "정상"}
+                  </span>
+                </div>
+
+                {/* 깜빡임 */}
+                <div
+                  className={cn(
+                    "flex-1 backdrop-blur-md rounded-full px-2 py-2 flex items-center justify-center gap-1 shadow-lg",
+                    lastAnalysisResult.blinkRate < 6
+                      ? "bg-red-500/20 text-red-200"
+                      : lastAnalysisResult.blinkRate < 12
+                        ? "bg-yellow-500/20 text-yellow-200"
+                        : lastAnalysisResult.blinkRate <= 30
+                          ? "bg-green-500/20 text-green-200"
+                          : "bg-orange-500/20 text-orange-200",
+                  )}
+                >
+                  분당 깜빡임 횟수
+                  <span className="text-[10px]">
+                    {lastAnalysisResult.blinkRate}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activeTask && (isActiveRef.current || isWaitingForFace) && (
+          <motion.div
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.2,
+              ease: "easeInOut",
+              layout: { duration: 0.3, ease: "easeInOut" },
+            }}
+            className="flex gap-3 justify-center bg-zinc-950 rounded-3xl p-3 mt-2"
+          >
             <Button
               variant="default"
               size="lg"
@@ -910,26 +964,42 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
               size="lg"
               onClick={async () => {
                 console.log("🛑 정지 버튼 클릭 - 전체 정지 시작");
-                
-                // 1. 먼저 타이머 정지
-                handleStopTimer();
-                
-                // 2. 수동 일시정지 상태 리셋
+
+                // 1. 얼굴 분석 결과를 faceStatsSummary로 변환
+                let faceStatsSummary: Record<string, unknown> | undefined;
+                if (lastAnalysisResult && isCameraMode) {
+                  faceStatsSummary = {
+                    averageAttentionScore: lastAnalysisResult.attentionScore,
+                    fatigueLevel: lastAnalysisResult.fatigueLevel,
+                    isDrowsy: lastAnalysisResult.isDrowsy,
+                    isYawning: lastAnalysisResult.isYawning,
+                    blinkRate: lastAnalysisResult.blinkRate,
+                    ear: lastAnalysisResult.ear,
+                    mar: lastAnalysisResult.mar,
+                    emotion: lastAnalysisResult.emotion,
+                  };
+                  console.log("📊 얼굴 분석 결과 전송:", faceStatsSummary);
+                }
+
+                // 2. 타이머 정지 (faceStatsSummary 전달)
+                handleStopTimer(faceStatsSummary);
+
+                // 3. 수동 일시정지 상태 리셋
                 setIsManualPause(false);
                 setPauseReason(null);
                 setLastAutoResumeTime(0);
                 setLastAutoPauseTime(0);
-                
-                // 3. 카메라 모드가 켜져있으면 추가로 카메라 끄기
+
+                // 4. 카메라 모드가 켜져있으면 추가로 카메라 끄기
                 if (isCameraMode && isCameraEnabled) {
                   console.log("🔄 추가 카메라 비활성화");
                   await toggleCamera();
                 }
-                
-                // 4. 카메라 모드 상태 완전 리셋
+
+                // 5. 카메라 모드 상태 완전 리셋
                 setIsCameraMode(false);
                 onCameraModeChange?.(false);
-                
+
                 console.log("✅ 전체 정지 완료");
               }}
               className="h-10 flex-1 px-4 bg-zinc-300 text-zinc-900 hover:bg-white/30 rounded-xl flex items-center justify-center gap-2"
@@ -949,20 +1019,20 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
             "px-6 py-2 rounded-xl transition-all duration-200",
             isCameraMode
               ? "bg-orange-500/20 text-orange-200 hover:bg-orange-500/30 relative before:absolute before:inset-0 before:rounded-xl before:border before:border-orange-500/50 before:animate-[border-spin_2s_linear_infinite] hover:before:opacity-100 before:opacity-0 transition-all duration-300"
-              : "bg-orange-700/50 text-white hover:bg-orange-700/30 relative before:absolute before:inset-0 before:rounded-xl before:border before:border-orange-500/50 before:animate-[border-spin_2s_linear_infinite] hover:before:opacity-100 before:opacity-0 transition-all duration-300"
+              : "bg-orange-700/50 text-white hover:bg-orange-700/30 relative before:absolute before:inset-0 before:rounded-xl before:border before:border-orange-500/50 before:animate-[border-spin_2s_linear_infinite] hover:before:opacity-100 before:opacity-0 transition-all duration-300",
           )}
         >
           {!isSecureContext()
             ? "HTTPS 환경에서만 사용 가능"
             : isCameraAvailable === null
-            ? "카메라 확인 중..."
-            : isCameraAvailable === false && cameraPermission === "granted"
-            ? "카메라 없음 (권한 재요청)"
-            : isCameraAvailable === false
-            ? "카메라 권한 요청"
-            : isCameraMode
-            ? "카메라 끄기"
-            : "AI 시간측정"}
+              ? "카메라 확인 중..."
+              : isCameraAvailable === false && cameraPermission === "granted"
+                ? "카메라 없음 (권한 재요청)"
+                : isCameraAvailable === false
+                  ? "카메라 권한 요청"
+                  : isCameraMode
+                    ? "카메라 끄기"
+                    : "AI 시간측정"}
         </Button>
 
         {cameraPermission === "granted" && availableCameras.length > 1 && (

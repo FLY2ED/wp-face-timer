@@ -1,18 +1,42 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Task } from "@/types";
-import { groups } from "@/data/mockData";
+import { useTask } from "@/contexts/TaskContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Briefcase, MoreHorizontal, GraduationCap, Code, Music, Dumbbell, Coffee, Heart, Zap, Film, Paintbrush, Book, Monitor, Users, Star, Home, MapPin, Clock } from "lucide-react";
+import {
+  BookOpen,
+  Briefcase,
+  MoreHorizontal,
+  GraduationCap,
+  Code,
+  Music,
+  Dumbbell,
+  Coffee,
+  Heart,
+  Zap,
+  Film,
+  Paintbrush,
+  Book,
+  Monitor,
+  Users,
+  Star,
+  Home,
+  MapPin,
+  Clock,
+} from "lucide-react";
 
 interface AddTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddTask?: (task: Task) => void;
 }
 
 // 어두운 테마에 맞는 노션 스타일의 색상 팔레트
@@ -61,50 +85,53 @@ const taskIcons = [
   { name: "기타", value: "MoreHorizontal", icon: MoreHorizontal },
 ];
 
-export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange, onAddTask }) => {
+export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
+  open,
+  onOpenChange,
+}) => {
+  const { createTask } = useTask();
+  const { isAuthenticated } = useAuth();
   const [taskTitle, setTaskTitle] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedColor, setSelectedColor] = useState("#37352F");
   const [selectedIcon, setSelectedIcon] = useState(taskIcons[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    setIsSubmitting(true);
-    
-    const newTask: Task = {
-      id: `task-${Date.now()}`,
-      title: taskTitle,
-      icon: selectedIcon.value,
-      color: selectedColor,
-      groupId: selectedGroup || undefined,
-      requiresAuth: true,
-    };
 
-    try {
-      // Supabase에 작업 저장
-      // const { data, error } = await supabase
-      //   .from('tasks')
-      //   .insert([{
-      //       user_id: "1",
-      //     title: taskTitle,
-      //     icon: selectedIcon.value,
-      //     group_id: selectedGroup || null,
-      //     color: selectedColor
-      //   }]);
+    if (!isAuthenticated) {
+      // 비로그인 시 로컬에만 저장 (이벤트로 TaskSelector에 알림)
+      const newTask = {
+        id: `local-${Date.now()}`,
+        title: taskTitle,
+        icon: selectedIcon.value,
+        color: selectedColor,
+        requiresAuth: false,
+      };
 
-      // if (error) throw error;
-
-      if (onAddTask) {
-        onAddTask(newTask);
-      }
+      window.dispatchEvent(new CustomEvent("taskAdded", { detail: newTask }));
 
       onOpenChange(false);
       resetForm();
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 백엔드에 태스크 저장
+      const result = await createTask({
+        title: taskTitle,
+        icon: selectedIcon.value,
+        color: selectedColor,
+      });
+
+      if (result) {
+        onOpenChange(false);
+        resetForm();
+      }
     } catch (error) {
       console.error("작업 추가 중 오류 발생:", error);
-      alert("작업을 추가하는 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +139,6 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
 
   const resetForm = () => {
     setTaskTitle("");
-    setSelectedGroup("");
     setSelectedColor("#37352F");
     setSelectedIcon(taskIcons[0]);
   };
@@ -122,9 +148,11 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
       <DialogContent className="sm:max-w-[480px] bg-zinc-800 border-zinc-700 rounded-lg shadow-lg p-0">
         <div className="p-6">
           <DialogHeader className="mb-5">
-            <DialogTitle className="text-lg font-medium text-zinc-200">새 작업 추가</DialogTitle>
+            <DialogTitle className="text-lg font-medium text-zinc-200">
+              새 작업 추가
+            </DialogTitle>
           </DialogHeader>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 작업명 입력 필드 - 노션 스타일 간소화된 입력 */}
             <div className="space-y-2">
@@ -137,36 +165,24 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
                 required
               />
             </div>
-            
-            {/* 그룹 선택 */}
-            <div className="space-y-2">
-              <Label htmlFor="group" className="text-sm text-zinc-400">
-                그룹
-              </Label>
-              <Select
-                value={selectedGroup}
-                onValueChange={setSelectedGroup}
-              >
-                <SelectTrigger className="w-full border-zinc-700 bg-zinc-800 text-zinc-200">
-                  <SelectValue placeholder="그룹 선택" />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700 text-zinc-200">
-                  {groups.map((group) => (
-                    <SelectItem key={group.id} value={group.id}>
-                      {group.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
+
             {/* 아이콘과 색상 선택 탭 */}
             <Tabs defaultValue="icon" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-zinc-700 rounded-lg p-1">
-                <TabsTrigger value="icon" className="rounded-md text-sm text-zinc-300 data-[state=active]:bg-zinc-600 data-[state=active]:text-zinc-100">아이콘</TabsTrigger>
-                <TabsTrigger value="color" className="rounded-md text-sm text-zinc-300 data-[state=active]:bg-zinc-600 data-[state=active]:text-zinc-100">색상</TabsTrigger>
+                <TabsTrigger
+                  value="icon"
+                  className="rounded-md text-sm text-zinc-300 data-[state=active]:bg-zinc-600 data-[state=active]:text-zinc-100"
+                >
+                  아이콘
+                </TabsTrigger>
+                <TabsTrigger
+                  value="color"
+                  className="rounded-md text-sm text-zinc-300 data-[state=active]:bg-zinc-600 data-[state=active]:text-zinc-100"
+                >
+                  색상
+                </TabsTrigger>
               </TabsList>
-              
+
               {/* 아이콘 선택 */}
               <TabsContent value="icon" className="mt-4">
                 <div className="grid grid-cols-5 gap-2">
@@ -181,18 +197,20 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
                       }`}
                       onClick={() => setSelectedIcon(icon)}
                     >
-                      <div 
+                      <div
                         className="w-8 h-8 mb-1 flex items-center justify-center rounded-md"
                         style={{ backgroundColor: selectedColor }}
                       >
                         <icon.icon className="h-5 w-5 text-white" />
                       </div>
-                      <span className="text-xs text-zinc-300 font-medium">{icon.name}</span>
+                      <span className="text-xs text-zinc-300 font-medium">
+                        {icon.name}
+                      </span>
                     </button>
                   ))}
                 </div>
               </TabsContent>
-              
+
               {/* 색상 선택 */}
               <TabsContent value="color" className="mt-4">
                 <div className="grid grid-cols-6 gap-3">
@@ -219,11 +237,11 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
                 </div>
               </TabsContent>
             </Tabs>
-            
+
             {/* 미리보기 - 노션 스타일 간소화 */}
             <div className="mt-4 py-4 border-t border-zinc-700">
               <div className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: selectedColor }}
                 >
@@ -234,19 +252,27 @@ export const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange
                 </span>
               </div>
             </div>
-            
+
+            {/* 비로그인 알림 */}
+            {!isAuthenticated && (
+              <div className="text-xs text-zinc-500 bg-zinc-700/30 p-2 rounded">
+                로그인하지 않으면 이 작업은 이 브라우저에서만 사용할 수
+                있습니다.
+              </div>
+            )}
+
             <DialogFooter className="pt-3 border-t border-zinc-700">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 className="mr-2 bg-transparent border-zinc-600 hover:bg-zinc-700 text-zinc-300"
               >
                 취소
               </Button>
-              <Button 
-                type="submit" 
-                disabled={!taskTitle || isSubmitting} 
+              <Button
+                type="submit"
+                disabled={!taskTitle || isSubmitting}
                 className="bg-zinc-600 hover:bg-zinc-500 text-white"
               >
                 {isSubmitting ? "추가 중..." : "추가하기"}

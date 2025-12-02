@@ -1,31 +1,36 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Task } from '@/types';
-import { FaceAnalysisResult } from '@/hooks/useFaceDetection';
-import { useTimer } from '@/contexts/TimerContext';
-import { formatDuration } from '@/utils/timeUtils';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Task } from "@/types";
+import { FaceAnalysisResult } from "@/hooks/useFaceDetection";
+import { useTimer } from "@/contexts/TimerContext";
+import { formatDuration } from "@/utils/timeUtils";
 
 // 타이머 상태 관리용 커스텀 훅
 export const useTimerState = () => {
   // 기존 TimerContext 사용
   const timerContext = useTimer();
-  
+
   // 카메라 & 얼굴 감지 상태
   const [isCameraMode, setIsCameraMode] = useState(false);
   const [isWaitingForFace, setIsWaitingForFace] = useState(false);
   const [canStartTimer, setCanStartTimer] = useState(false);
-  const [faceDetectedStartTime, setFaceDetectedStartTime] = useState<number | null>(null);
-  const [lastAnalysisResult, setLastAnalysisResult] = useState<FaceAnalysisResult | null>(null);
+  const [faceDetectedStartTime, setFaceDetectedStartTime] = useState<
+    number | null
+  >(null);
+  const [lastAnalysisResult, setLastAnalysisResult] =
+    useState<FaceAnalysisResult | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [formattedTime, setFormattedTime] = useState("00:00:00");
   const [taskTimes, setTaskTimes] = useState<Record<string, number>>({});
-  
+
   // Refs
   const faceDetectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 작업 시간 로드
   const loadTaskTimes = useCallback(() => {
     try {
-      const savedTaskTimes = JSON.parse(localStorage.getItem("task_times") || "{}");
+      const savedTaskTimes = JSON.parse(
+        localStorage.getItem("task_times") || "{}",
+      );
       setTaskTimes(savedTaskTimes);
     } catch {
       setTaskTimes({});
@@ -34,7 +39,10 @@ export const useTimerState = () => {
 
   // 모든 작업의 총 시간 계산
   const getTotalTaskTime = useCallback(() => {
-    const total = Object.values(taskTimes).reduce((total, time) => total + time, 0);
+    const total = Object.values(taskTimes).reduce(
+      (total, time) => total + time,
+      0,
+    );
     return total;
   }, [taskTimes]);
 
@@ -46,7 +54,7 @@ export const useTimerState = () => {
     } else {
       // 타이머 정지 상태에서는 항상 전체 총 시간 표시
       const totalTime = getTotalTaskTime();
-      
+
       if (timerContext.activeTask) {
         // 현재 활성 작업이 있으면 taskTimes에서 모든 작업의 시간을 합산
         // (정지 상태에서는 elapsedTime을 사용하지 않고 저장된 taskTimes만 사용)
@@ -56,7 +64,13 @@ export const useTimerState = () => {
         setFormattedTime(formatDuration(totalTime));
       }
     }
-  }, [timerContext.elapsedTime, timerContext.isActive, timerContext.activeTask, getTotalTaskTime, taskTimes]);
+  }, [
+    timerContext.elapsedTime,
+    timerContext.isActive,
+    timerContext.activeTask,
+    getTotalTaskTime,
+    taskTimes,
+  ]);
 
   // 작업 시간 주기적 로드
   useEffect(() => {
@@ -64,7 +78,7 @@ export const useTimerState = () => {
     const interval = setInterval(loadTaskTimes, 1000);
     const handleStorageChange = () => loadTaskTimes();
     window.addEventListener("storage", handleStorageChange);
-    
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       clearInterval(interval);
@@ -163,31 +177,38 @@ export const useTimerState = () => {
 
   // 타이머 액션들 (TimerContext 래핑)
   const timerActions = {
-    startTimer: useCallback((task: Task) => {
-      const previousTime = taskTimes[task.id] || 0;
-      timerContext.startTimer(task);
-      cameraActions.stopFaceWaiting();
-      cameraActions.setCanStartTimer(false);
-    }, [timerContext, taskTimes, cameraActions]),
+    startTimer: useCallback(
+      (task: Task) => {
+        const previousTime = taskTimes[task.id] || 0;
+        timerContext.startTimer(task);
+        cameraActions.stopFaceWaiting();
+        cameraActions.setCanStartTimer(false);
+      },
+      [timerContext, taskTimes, cameraActions],
+    ),
 
-    handleStopTimer: useCallback(() => {
-      if (timerContext.activeTask) {
-        // 작업 시간 저장
-        const currentTaskTimes = { ...taskTimes };
-        currentTaskTimes[timerContext.activeTask.id] = timerContext.elapsedTime;
-        localStorage.setItem('task_times', JSON.stringify(currentTaskTimes));
-        setTaskTimes(currentTaskTimes);
-      }
-      
-      // 타이머 정지 (stopTimer 사용하여 시간 기록 보존)
-      timerContext.stopTimer();
-      
-      // 얼굴 감지 관련 상태 완전 초기화
-      cameraActions.resetAllFaceStates();
-      
-      // 카메라 모드 비활성화
-      cameraActions.disableCameraMode();
-    }, [timerContext, cameraActions, taskTimes]),
+    handleStopTimer: useCallback(
+      (faceStatsSummary?: Record<string, unknown>) => {
+        if (timerContext.activeTask) {
+          // 작업 시간 저장
+          const currentTaskTimes = { ...taskTimes };
+          currentTaskTimes[timerContext.activeTask.id] =
+            timerContext.elapsedTime;
+          localStorage.setItem("task_times", JSON.stringify(currentTaskTimes));
+          setTaskTimes(currentTaskTimes);
+        }
+
+        // 타이머 정지 (stopTimer 사용하여 시간 기록 보존, faceStatsSummary 전달)
+        timerContext.stopTimer(faceStatsSummary);
+
+        // 얼굴 감지 관련 상태 완전 초기화
+        cameraActions.resetAllFaceStates();
+
+        // 카메라 모드 비활성화
+        cameraActions.disableCameraMode();
+      },
+      [timerContext, cameraActions, taskTimes],
+    ),
 
     pauseTimer: useCallback(() => {
       timerContext.pauseTimer();
@@ -209,11 +230,11 @@ export const useTimerState = () => {
   // 5초 타이머 시작
   const startFaceDetectionTimer = useCallback(() => {
     if (faceDetectedStartTime) return; // 이미 시작됨
-    
+
     console.log("👤 첫 얼굴 감지 시작 - 5초 대기 시작");
     const currentTime = Date.now();
     setFaceDetectedStartTime(currentTime);
-    
+
     faceDetectionTimeoutRef.current = setTimeout(() => {
       console.log("⏰ 5초 대기 완료 - 타이머 시작 가능");
       setCanStartTimer(true);
@@ -231,10 +252,10 @@ export const useTimerState = () => {
     isVideoReady,
     formattedTime,
     taskTimes,
-    
+
     // Refs
     faceDetectionTimeoutRef,
-    
+
     // 액션들
     ...cameraActions,
     ...timerActions,
@@ -242,4 +263,4 @@ export const useTimerState = () => {
     loadTaskTimes,
     getTotalTaskTime,
   };
-}; 
+};
