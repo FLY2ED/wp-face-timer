@@ -15,7 +15,6 @@ import PricingPage from "./pages/PricingPage";
 import RankingPage from "./pages/RankingPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import SettingsPage from "./pages/SettingsPage";
-import AuthPage from "./pages/AuthPage";
 
 const queryClient = new QueryClient();
 
@@ -59,7 +58,7 @@ const App = () => (
                   }}
                 />
                 <Routes>
-                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/auth" element={<Navigate to="/" replace />} />
                   <Route path="/" element={<Index />} />
                   <Route
                     path="/todo"

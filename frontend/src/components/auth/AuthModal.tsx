@@ -24,7 +24,7 @@ export const AuthModal = ({
   open,
   onOpenChange,
   title = "로그인",
-  description = "계속하려면 로그인해주세요"
+  description = "계속하려면 로그인해주세요",
 }: AuthModalProps) => {
   const { login, register, isLoading } = useAuth();
 
@@ -36,8 +36,12 @@ export const AuthModal = ({
   // Register form state
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showRegisterConfirmPassword, setShowRegisterConfirmPassword] =
+    useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +56,44 @@ export const AuthModal = ({
     }
   };
 
+  // Validate password requirements
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return "비밀번호는 최소 8자 이상이어야 합니다";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "대문자를 포함해야 합니다";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "소문자를 포함해야 합니다";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "숫자를 포함해야 합니다";
+    }
+    if (!/[@$!%*?&]/.test(password)) {
+      return "특수문자(@$!%*?&)를 포함해야 합니다";
+    }
+    return null;
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password
+    const validationError = validatePassword(registerPassword);
+    if (validationError) {
+      setPasswordError(validationError);
+      return;
+    }
+
+    // Check password confirmation
+    if (registerPassword !== registerConfirmPassword) {
+      setPasswordError("비밀번호가 일치하지 않습니다");
+      return;
+    }
+
+    setPasswordError("");
+
     try {
       await register({
         email: registerEmail,
@@ -64,6 +104,7 @@ export const AuthModal = ({
       // Reset form
       setRegisterEmail("");
       setRegisterPassword("");
+      setRegisterConfirmPassword("");
       setRegisterName("");
     } catch (error) {
       // Error is handled in AuthContext
@@ -79,7 +120,9 @@ export const AuthModal = ({
               <Timer className="w-6 h-6 text-orange-500" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold text-center">{title}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">
+            {title}
+          </DialogTitle>
           <DialogDescription className="text-zinc-400 text-center">
             {description}
           </DialogDescription>
@@ -104,7 +147,9 @@ export const AuthModal = ({
           <TabsContent value="login" className="mt-4">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-zinc-300">이메일</Label>
+                <Label htmlFor="login-email" className="text-zinc-300">
+                  이메일
+                </Label>
                 <Input
                   id="login-email"
                   type="email"
@@ -118,7 +163,9 @@ export const AuthModal = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-zinc-300">비밀번호</Label>
+                <Label htmlFor="login-password" className="text-zinc-300">
+                  비밀번호
+                </Label>
                 <div className="relative">
                   <Input
                     id="login-password"
@@ -158,7 +205,9 @@ export const AuthModal = ({
           <TabsContent value="register" className="mt-4">
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="register-name" className="text-zinc-300">이름</Label>
+                <Label htmlFor="register-name" className="text-zinc-300">
+                  이름
+                </Label>
                 <Input
                   id="register-name"
                   type="text"
@@ -174,7 +223,9 @@ export const AuthModal = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="register-email" className="text-zinc-300">이메일</Label>
+                <Label htmlFor="register-email" className="text-zinc-300">
+                  이메일
+                </Label>
                 <Input
                   id="register-email"
                   type="email"
@@ -188,7 +239,9 @@ export const AuthModal = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="register-password" className="text-zinc-300">비밀번호</Label>
+                <Label htmlFor="register-password" className="text-zinc-300">
+                  비밀번호
+                </Label>
                 <div className="relative">
                   <Input
                     id="register-password"
@@ -204,7 +257,9 @@ export const AuthModal = ({
                   />
                   <button
                     type="button"
-                    onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                    onClick={() =>
+                      setShowRegisterPassword(!showRegisterPassword)
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
                     disabled={isLoading}
                   >
@@ -216,8 +271,50 @@ export const AuthModal = ({
                   </button>
                 </div>
                 <p className="text-xs text-zinc-500">
-                  최소 8자, 대소문자, 숫자, 특수문자 포함
+                  최소 8자, 대소문자, 숫자, 특수문자(@$!%*?&) 포함
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="register-confirm-password"
+                  className="text-zinc-300"
+                >
+                  비밀번호 확인
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="register-confirm-password"
+                    type={showRegisterConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={registerConfirmPassword}
+                    onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                    required
+                    minLength={8}
+                    maxLength={100}
+                    disabled={isLoading}
+                    className="bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:border-orange-500 focus:ring-orange-500 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowRegisterConfirmPassword(
+                        !showRegisterConfirmPassword,
+                      )
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
+                    disabled={isLoading}
+                  >
+                    {showRegisterConfirmPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="text-xs text-red-500">{passwordError}</p>
+                )}
               </div>
 
               <Button
