@@ -351,41 +351,6 @@ export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
     });
   }, [isPaused, isActiveRef.current, isCameraMode, isManualPause, pauseReason]);
 
-  // 주요 상태들의 실시간 변화 추적
-  useEffect(() => {
-    // console.log("📊 전체 상태 스냅샷:", {
-    //   isCameraMode: isCameraMode,
-    //   useTimerState: {
-    //     isActive: isActive,
-    //     isPaused: isPaused,
-    //     activeTask: activeTask?.title || "없음",
-    //     elapsedTime: elapsedTime,
-    //     formattedTime: formattedTime
-    //   },
-    //   timerContext: {
-    //     isActive: timerContext.isActive,
-    //     isPaused: timerContext.isPaused,
-    //     activeTask: timerContext.activeTask?.title || "없음",
-    //     elapsedTime: timerContext.elapsedTime
-    //   },
-    //   isWaitingForFace: isWaitingForFace,
-    //   canStartTimer: canStartTimer,
-    //   timestamp: new Date().toLocaleTimeString()
-    // });
-  }, [
-    isCameraMode,
-    isActiveRef.current,
-    isPaused,
-    activeTask,
-    isWaitingForFace,
-    canStartTimer,
-    timerContext.isActive,
-    timerContext.isPaused,
-    timerContext.elapsedTime,
-    formattedTime,
-    elapsedTime,
-  ]);
-
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
     return () => {
