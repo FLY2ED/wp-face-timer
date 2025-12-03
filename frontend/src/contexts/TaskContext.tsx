@@ -4,7 +4,6 @@ import type { TaskResponseDto, CreateTaskDto, UpdateTaskDto } from '@/types/api'
 import type { Task } from '@/types';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
-import { defaultTasks } from '@/data/mockData';
 
 interface TaskContextType {
   tasks: Task[];
@@ -52,8 +51,8 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   // 태스크 목록 조회
   const fetchTasks = useCallback(async () => {
     if (!isAuthenticated) {
-      // 비로그인 시 기본 태스크 사용
-      setTasks(defaultTasks);
+      // 비로그인 시 빈 배열
+      setTasks([]);
       return;
     }
 
@@ -62,18 +61,11 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
       setError(null);
       const response = await TaskService.getAll();
       const transformedTasks = response.map(transformTaskResponse);
-
-      // 백엔드 태스크가 없으면 기본 태스크도 함께 표시
-      if (transformedTasks.length === 0) {
-        setTasks(defaultTasks);
-      } else {
-        setTasks(transformedTasks);
-      }
+      setTasks(transformedTasks);
     } catch (err: any) {
       console.error('Failed to fetch tasks:', err);
       setError('태스크를 불러오는데 실패했습니다.');
-      // 에러 시 기본 태스크 표시
-      setTasks(defaultTasks);
+      setTasks([]);
     } finally {
       setIsLoading(false);
     }

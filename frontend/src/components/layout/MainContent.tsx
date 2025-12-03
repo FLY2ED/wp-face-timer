@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Timer } from "../timer/Timer";
 import { TaskSelector } from "../tasks/TaskSelector";
 import { useTimer } from "@/contexts/TimerContext";
@@ -8,10 +9,12 @@ import { Button } from "../ui/button";
 import { Plus, RotateCcw } from "lucide-react";
 import { AddTaskDialog } from "../tasks/AddTaskDialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const MainContent: React.FC = () => {
   const { isActive, resetDailyRecords } = useTimer();
   const { isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [isCameraMode, setIsCameraMode] = useState(false);
@@ -19,6 +22,22 @@ export const MainContent: React.FC = () => {
     title: "로그인",
     description: "계속하려면 로그인해주세요",
   });
+
+  // URL 파라미터로 authRequired가 있으면 로그인 모달 띄우기
+  useEffect(() => {
+    if (searchParams.get("authRequired") === "true" && !isAuthenticated) {
+      toast.error("로그인이 필요합니다", {
+        description: "해당 페이지에 접근하려면 로그인이 필요합니다.",
+      });
+      setAuthModalProps({
+        title: "로그인 필요",
+        description: "해당 페이지에 접근하려면 로그인이 필요합니다.",
+      });
+      setShowAuthModal(true);
+      // URL에서 파라미터 제거
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, isAuthenticated, setSearchParams]);
 
   const handleRequireAuth = (action: string) => {
     if (!isAuthenticated) {
@@ -62,21 +81,6 @@ export const MainContent: React.FC = () => {
         <Timer onCameraModeChange={handleCameraModeChange} />
         <TaskSelector onRequireAuth={handleRequireAuth} disabled={isActive} />
       </div>
-
-      {!isAuthenticated && (
-        <div className="mt-8 flex flex-col items-center">
-          <p className="text-zinc-400 mb-4">
-            더 많은 기능을 사용하려면 로그인하세요
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => setShowAuthModal(true)}
-            className="bg-zinc-700 border-zinc-600 text-white hover:bg-zinc-600"
-          >
-            로그인 / 회원가입
-          </Button>
-        </div>
-      )}
 
       <AuthModal
         open={showAuthModal}

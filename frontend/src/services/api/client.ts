@@ -47,10 +47,20 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
   failedQueue = [];
 };
 
+// Auth endpoints that should not trigger token refresh logic
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'];
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorResponse>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const requestUrl = originalRequest?.url || '';
+
+    // Skip token refresh logic for auth endpoints
+    const isAuthEndpoint = AUTH_ENDPOINTS.some(endpoint => requestUrl.includes(endpoint));
+    if (isAuthEndpoint) {
+      return Promise.reject(error);
+    }
 
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -76,10 +86,8 @@ apiClient.interceptors.response.use(
       const refreshToken = localStorage.getItem('refresh_token');
 
       if (!refreshToken) {
-        // No refresh token, logout user
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/';
+        // No refresh token, just reject (don't redirect - let the app handle it)
+        isRefreshing = false;
         return Promise.reject(error);
       }
 
@@ -107,10 +115,9 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);
 
-        // Refresh failed, logout user
+        // Refresh failed, clear tokens (don't redirect - let the app handle it)
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/';
 
         return Promise.reject(refreshError);
       } finally {

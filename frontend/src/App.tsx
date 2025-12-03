@@ -31,7 +31,7 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/?authRequired=true" replace />;
   }
 
   return <>{children}</>;
@@ -60,7 +60,6 @@ const App = () => (
                     }}
                   />
                   <Routes>
-                    <Route path="/auth" element={<Navigate to="/" replace />} />
                     <Route path="/" element={<Index />} />
                     <Route
                       path="/todo"

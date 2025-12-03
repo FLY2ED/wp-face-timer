@@ -31,7 +31,6 @@ import { useCameraPermissionContext } from "@/contexts/CameraPermissionContext";
 import { CameraPreview } from "./CameraPreview";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { users as mockUsers } from "@/data/mockData"; // MOCK_USER 정의에 필요
 import { useTimerState } from "@/hooks/useTimerState";
 
 // 아이콘 매핑 객체 (TaskSelector와 동일)
@@ -61,8 +60,6 @@ const isSecureContext = (): boolean => {
 interface TimerProps {
   onCameraModeChange?: (isOn: boolean) => void;
 }
-
-const MOCK_USER_ID = mockUsers[0]?.id || "user1"; // 필요시 사용 (현재 Timer.tsx에서는 직접 사용 안함)
 
 export const Timer: React.FC<TimerProps> = ({ onCameraModeChange }) => {
   // 새로운 타이머 상태 훅 사용
