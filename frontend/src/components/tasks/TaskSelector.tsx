@@ -114,16 +114,17 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
     return (
       <div className="mt-8 flex flex-col items-center">
         <div className="flex flex-col items-center gap-4 text-center p-6 rounded-2xl bg-zinc-800/30">
-          <LogIn className="h-10 w-10 text-zinc-500" />
           <div className="space-y-2">
-            <p className="text-base font-medium text-zinc-300">로그인이 필요합니다</p>
+            <p className="text-base font-medium text-zinc-300">
+              로그인이 필요합니다
+            </p>
             <p className="text-sm text-zinc-500">
               시간 측정을 하려면 먼저 로그인해주세요
             </p>
           </div>
           <Button
             onClick={() => onRequireAuth("시간 측정")}
-            className="mt-2 bg-orange-600 hover:bg-orange-700 text-white"
+            className="mt-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl"
           >
             로그인 / 회원가입
           </Button>

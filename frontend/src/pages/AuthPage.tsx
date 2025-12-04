@@ -5,7 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff, Timer } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
@@ -63,7 +69,9 @@ const AuthPage = () => {
               <Timer className="w-6 h-6 text-orange-500" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">NALDA</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            NALDA
+          </CardTitle>
           <CardDescription className="text-zinc-400 text-center">
             집중력 관리 및 시간 측정 서비스
           </CardDescription>
@@ -88,7 +96,9 @@ const AuthPage = () => {
             <TabsContent value="login" className="mt-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email" className="text-zinc-300">이메일</Label>
+                  <Label htmlFor="login-email" className="text-zinc-300">
+                    이메일
+                  </Label>
                   <Input
                     id="login-email"
                     type="email"
@@ -102,7 +112,9 @@ const AuthPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password" className="text-zinc-300">비밀번호</Label>
+                  <Label htmlFor="login-password" className="text-zinc-300">
+                    비밀번호
+                  </Label>
                   <div className="relative">
                     <Input
                       id="login-password"
@@ -131,7 +143,7 @@ const AuthPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold"
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl"
                   disabled={isLoading}
                 >
                   {isLoading ? "로그인 중..." : "로그인"}
@@ -142,7 +154,9 @@ const AuthPage = () => {
             <TabsContent value="register" className="mt-4">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="register-name" className="text-zinc-300">이름</Label>
+                  <Label htmlFor="register-name" className="text-zinc-300">
+                    이름
+                  </Label>
                   <Input
                     id="register-name"
                     type="text"
@@ -158,7 +172,9 @@ const AuthPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="text-zinc-300">이메일</Label>
+                  <Label htmlFor="register-email" className="text-zinc-300">
+                    이메일
+                  </Label>
                   <Input
                     id="register-email"
                     type="email"
@@ -172,7 +188,9 @@ const AuthPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-password" className="text-zinc-300">비밀번호</Label>
+                  <Label htmlFor="register-password" className="text-zinc-300">
+                    비밀번호
+                  </Label>
                   <div className="relative">
                     <Input
                       id="register-password"
@@ -188,7 +206,9 @@ const AuthPage = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      onClick={() =>
+                        setShowRegisterPassword(!showRegisterPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300"
                       disabled={isLoading}
                     >
@@ -206,7 +226,7 @@ const AuthPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold"
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl"
                   disabled={isLoading}
                 >
                   {isLoading ? "가입 중..." : "회원가입"}

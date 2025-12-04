@@ -58,7 +58,7 @@ export const UserProfile: React.FC<{
   const getStatusColor = (status: string) => {
     switch (status) {
       case "online":
-        return "bg-orange-600";
+        return "bg-green-500";
       case "timing":
         return "bg-red-500";
       case "resting":
@@ -91,9 +91,8 @@ export const UserProfile: React.FC<{
         <div className="flex items-center gap-2 text-white">
           <div className="relative">
             <Avatar className={avatarSizes[size]}>
-              <AvatarImage src={"https://github.com/shadcn.png"} />
               <AvatarFallback className="bg-zinc-700 text-white">
-                {email?.substring(0, 2).toUpperCase()}
+                <User size={18} />
               </AvatarFallback>
             </Avatar>
             <div
